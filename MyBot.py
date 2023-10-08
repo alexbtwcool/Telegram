@@ -62,16 +62,17 @@ def words(message):
 
 def write(message):
 
+
     text = message.text
     user_id = message.from_user.id
     if text == "⏰ 1 час":
-        text = '60'
+        text = 60
     elif text == '🕜 3 часа':
-        text = '180'
+        text = 180
     elif text == '🕣 9 часов':
-        text = '480'
+        text = 480
     elif text == '🕛 24 часа':
-        text = '1240'
+        text = 1240
 
     try:
         int(text)
@@ -80,16 +81,24 @@ def write(message):
         with open('time_user.json', 'r') as f_o:
             data_from_json = json.load(f_o)
 
-        data_from_json.append({user_id: {'time': text}})
+        for i in data_from_json:
+            if user_id not in data_from_json:
+                data_from_json.append({user_id: {'time': text}})
+
+        else:
 
 
         with open('time_user.json', 'w') as f_o:
             json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
-            complete_remind(message)
+
     except ValueError:
+        text = int(text)
         if type(text) != int:
+            print(type(text))
             bot.reply_to(message=message, text=f'Время должно быть указано в минутах!')
             words(message)
+    complete_remind(message)
+
 
 
 def complete_remind(message):
@@ -98,44 +107,46 @@ def complete_remind(message):
     okey.add(update_words)
     user_id = message.from_user.id
 
-
-    with open('word.json', 'r') as f_o:
-        data_from_json = json.load(f_o)
-    words = data_from_json
-
-
-
-    for i in words:
-        all = i['words']
-        four_words = random.sample(all, 4)
-        duplicates = []
-
-        england, russian = random.SystemRandom().sample(four_words,1), random.SystemRandom().sample(four_words, 3)
-        if england not in russian:
-            russian.pop(1)
-            russian.append(''.join(england))
-            random.shuffle(russian)
-
-        translate = (' '.join(england)).split('—')[1].replace(' ', '')
-        russian, only_england = ', '.join(russian), ', '.join(england)
-        only_england = re.sub('[ЁёА-я-—]', '', only_england)
-        russian = re.sub("[a-zA-Z-—]", "", russian)
-        print(four_words)
-        four_words = ', '.join(four_words)
-        print(only_england, russian)
-        bot.reply_to(message=message, text=f'Ваши слова для обучения: {four_words}', reply_markup=okey)
-        with open('bind.json', 'r') as f_o:
+    for _ in range(2):
+        with open('word.json', 'r') as f_o:
             data_from_json = json.load(f_o)
+        words = data_from_json
 
-        data_from_json.append({user_id: [only_england, russian]})
 
-        with open('bind.json', 'w') as f_o:
-            json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+        for i in words:
+            all = i['words']
+            four_words = random.sample(all, 4)
+            duplicates = []
 
-        bot.register_next_step_handler(message, update)
+            england, russian = random.SystemRandom().sample(four_words,1), random.SystemRandom().sample(four_words, 3)
+            if england not in russian:
+                russian.pop(1)
+                russian.append(''.join(england))
+                random.shuffle(russian)
+
+            translate = (' '.join(england)).split('—')[1].replace(' ', '')
+            russian, only_england = ', '.join(russian), ', '.join(england)
+            only_england = re.sub('[ЁёА-я-—]', '', only_england)
+            russian = re.sub("[a-zA-Z-—]", "", russian)
+            print(four_words)
+            four_words = ', '.join(four_words)
+            print(only_england, russian)
+            bot.reply_to(message=message, text=f'Ваши слова для обучения: {four_words}', reply_markup=okey)
+            with open('bind.json', 'r') as f_o:
+                data_from_json = json.load(f_o)
+
+            data_from_json.append({user_id: [only_england, russian]})
+
+            with open('bind.json', 'w') as f_o:
+                json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+
+    bot.register_next_step_handler(message, update)
+
+
 
 
 def update(message):
+
     if message.text == '🔄 Обновить слова':
         complete_remind(message)
     else:
