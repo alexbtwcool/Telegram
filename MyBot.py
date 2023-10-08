@@ -21,7 +21,7 @@ def start(message):
 
     with open('reg.json', 'r') as f_o:
         data_from_json = json.load(f_o)
-
+# ООП = user_id, username
     user_id = message.from_user.id
     username = message.from_user.first_name
     user_exists = False
@@ -46,46 +46,58 @@ def start(message):
 
 @bot.message_handler(commands=['words'])
 def words(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    time_60 = types.KeyboardButton("⏰ 1 час")
+    time_180 = types.KeyboardButton('🕜 3 часа')
+    time_480 = types.KeyboardButton('🕣 9 часов')
+    time_1240 = types.KeyboardButton('🕛 24 часа')
+
+
+    markup.add(time_60, time_180, time_480, time_1240)
     bot.reply_to(message=message, text=f"""Отправь задержку, вот так: \n
-*60* \n \n(напоминание произойдет через 60 минут) 😉""")
+*60* \n \n(напоминание произойдет через 60 минут), также можешь использовать кнопки в панели 😉""", reply_markup=markup)
     bot.register_next_step_handler(message, write)
+
 
 
 def write(message):
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    time_60 = types.KeyboardButton("⏰ 60 минут")
-    time_180 = types.KeyboardButton('🕜 3 часа')
-    time_480 = types.KeyboardButton('🕣 9 часов')
-    time_1240 = types.KeyboardButton('🕛 24 часа')
-    update_words = types.KeyboardButton('🔄 Обновить слова')
-
-
-    markup.add(time_60, time_180, time_480, time_1240)
-
     text = message.text
     user_id = message.from_user.id
+    if text == "⏰ 1 час":
+        text = '60'
+    elif text == '🕜 3 часа':
+        text = '180'
+    elif text == '🕣 9 часов':
+        text = '480'
+    elif text == '🕛 24 часа':
+        text = '1240'
 
     try:
         int(text)
-        bot.reply_to(message=message, text=f'''Отлично, Вы указали время задержки = *{text}*''', reply_markup=markup)
+        bot.reply_to(message=message, text=f'''Отлично, Вы указали время задержки = *{text}*''')
 
-        with open('words.json', 'r') as f_o:
+        with open('time_user.json', 'r') as f_o:
             data_from_json = json.load(f_o)
 
         data_from_json.append({user_id: {'time': text}})
 
 
-        with open('words.json', 'w') as f_o:
+        with open('time_user.json', 'w') as f_o:
             json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+            complete_remind(message)
     except ValueError:
-        bot.reply_to(message=message, text=f'Время должно быть указано в минутах!')
-    complete_remind(message)
+        if type(text) != int:
+            bot.reply_to(message=message, text=f'Время должно быть указано в минутах!')
+            words(message)
+
 
 def complete_remind(message):
     okey = types.ReplyKeyboardMarkup(resize_keyboard=True)
     update_words = types.KeyboardButton('🔄 Обновить слова')
     okey.add(update_words)
+    user_id = message.from_user.id
+
 
     with open('word.json', 'r') as f_o:
         data_from_json = json.load(f_o)
@@ -108,10 +120,20 @@ def complete_remind(message):
         russian, only_england = ', '.join(russian), ', '.join(england)
         only_england = re.sub('[ЁёА-я-—]', '', only_england)
         russian = re.sub("[a-zA-Z-—]", "", russian)
+        print(four_words)
         four_words = ', '.join(four_words)
-
+        print(only_england, russian)
         bot.reply_to(message=message, text=f'Ваши слова для обучения: {four_words}', reply_markup=okey)
+        with open('bind.json', 'r') as f_o:
+            data_from_json = json.load(f_o)
+
+        data_from_json.append({user_id: [only_england, russian]})
+
+        with open('bind.json', 'w') as f_o:
+            json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+
         bot.register_next_step_handler(message, update)
+
 
 def update(message):
     if message.text == '🔄 Обновить слова':
@@ -125,15 +147,11 @@ def update(message):
 @bot.message_handler(commands=['reminds'])
 def reminds(message):
     user_id = message.from_user.id
-    with open('word.json', 'r') as f_o:
+    with open('bind.json', 'r') as f_o:
         data_from_json = json.load(f_o)
-
-    text = []
     for i in data_from_json:
         if str(user_id) in i:
-            text.append((i[str(user_id)]['text']))
-    text = ', '.join(text)
-    bot.reply_to(message=message, text=f'Ваши напоминания: {text}')
+            bot.reply_to(message, text='—'.join(i[str(user_id)]))
 
 
 bot.polling()
