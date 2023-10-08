@@ -2,6 +2,7 @@ import json
 import time
 import random
 import re
+import schedule
 
 import telebot
 from telebot import types # для указание типов
@@ -73,32 +74,37 @@ def write(message):
         text = 480
     elif text == '🕛 24 часа':
         text = 1240
-
+    else:
+        text = message.text
+        try:
+            text = int(text)
+        except ValueError:
+            bot.reply_to(message, text='⚠️ ЗАДЕРЖКА ДОЛЖНА БЫТЬ УКАЗАНА В ЦИФРАХ!!!')
+            return
+        print(text)
     try:
-        int(text)
-        bot.reply_to(message=message, text=f'''Отлично, Вы указали время задержки = *{text}*''')
 
+        user_exists = False
         with open('time_user.json', 'r') as f_o:
             data_from_json = json.load(f_o)
+        for item in data_from_json:
+            if str(user_id) in item:
+                bot.reply_to(message=message, text='Вы уже установили напоминание. Если желаете удалить текущие слова - {command}')
+                user_exists = True
+                return
 
-        for i in data_from_json:
-            if user_id not in data_from_json:
-                data_from_json.append({user_id: {'time': text}})
+        if user_exists == False:
+            data_from_json.append({user_id: {'time': text}})
+            bot.reply_to(message=message, text=f'''Отлично, Вы указали время задержки = *{text}* минут''')
+            complete_remind(message)
 
-        else:
-
-
-        with open('time_user.json', 'w') as f_o:
-            json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+            with open('time_user.json', 'w') as f_o:
+                json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
 
     except ValueError:
-        text = int(text)
-        if type(text) != int:
-            print(type(text))
+        if type(int(text)) != int:
             bot.reply_to(message=message, text=f'Время должно быть указано в минутах!')
             words(message)
-    complete_remind(message)
-
 
 
 def complete_remind(message):
@@ -135,10 +141,13 @@ def complete_remind(message):
             with open('bind.json', 'r') as f_o:
                 data_from_json = json.load(f_o)
 
-            data_from_json.append({user_id: [only_england, russian]})
+            data_from_json.append({user_id: [only_england, russian, translate]})
 
             with open('bind.json', 'w') as f_o:
                 json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+
+        if message.text == '🔄 Обновить слова':
+            complete_remind(message)
 
     bot.register_next_step_handler(message, update)
 
@@ -149,10 +158,33 @@ def update(message):
 
     if message.text == '🔄 Обновить слова':
         complete_remind(message)
-    else:
-        return
 
 
+@bot.message_handler(commands=['delete'])
+def delete(message):
+    user_id = message.from_user.id
+    with open('time_user.json', 'r') as f_o:
+        data_from_json = json.load(f_o)
+
+
+    for user in data_from_json:
+        if str(user_id) in user:
+            data_from_json.remove(user)
+    with open('time_user.json', 'w') as f_o:
+        json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+
+    with open('bind.json') as f_o:
+        data_from_json = json.load(f_o)
+
+    for _ in range(2):
+        for user in data_from_json:
+            if str(user_id) in user:
+                data_from_json.remove(user)
+
+
+    with open('bind.json', 'w') as f_o:
+        json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+    bot.reply_to(message, text="Готово")
 
 
 @bot.message_handler(commands=['reminds'])
@@ -163,6 +195,7 @@ def reminds(message):
     for i in data_from_json:
         if str(user_id) in i:
             bot.reply_to(message, text='—'.join(i[str(user_id)]))
+
 
 
 bot.polling()
