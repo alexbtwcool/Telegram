@@ -3,7 +3,7 @@ import time
 import random
 import re
 import schedule
-
+import asyncio
 import telebot
 from telebot import types # для указание типов
 
@@ -89,13 +89,13 @@ def write(message):
             data_from_json = json.load(f_o)
         for item in data_from_json:
             if str(user_id) in item:
-                bot.reply_to(message=message, text='Вы уже установили напоминание. Если желаете удалить текущие слова - {command}')
+                bot.reply_to(message=message, text='Вы уже установили напоминание. Если желаете удалить текущие слова - /delete')
                 user_exists = True
                 return
 
         if user_exists == False:
             data_from_json.append({user_id: {'time': text}})
-            bot.reply_to(message=message, text=f'''Отлично, Вы указали время задержки = *{text}* минут''')
+            bot.reply_to(message=message, text=f'''Отлично, время задержки *{text} минут(а)*''')
             complete_remind(message)
 
             with open('time_user.json', 'w') as f_o:
@@ -113,6 +113,7 @@ def complete_remind(message):
     okey.add(update_words)
     user_id = message.from_user.id
 
+    text_words = []
     for _ in range(2):
         with open('word.json', 'r') as f_o:
             data_from_json = json.load(f_o)
@@ -137,7 +138,9 @@ def complete_remind(message):
             print(four_words)
             four_words = ', '.join(four_words)
             print(only_england, russian)
-            bot.reply_to(message=message, text=f'Ваши слова для обучения: {four_words}', reply_markup=okey)
+
+
+            bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words}', reply_markup=okey)
             with open('bind.json', 'r') as f_o:
                 data_from_json = json.load(f_o)
 
@@ -146,17 +149,16 @@ def complete_remind(message):
             with open('bind.json', 'w') as f_o:
                 json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
 
-        if message.text == '🔄 Обновить слова':
-            complete_remind(message)
 
-    bot.register_next_step_handler(message, update)
+        bot.register_next_step_handler(message, update)
 
 
 
 
 def update(message):
-
-    if message.text == '🔄 Обновить слова':
+    test = 1
+    if message.text == '🔄 Обновить слова' and test == 1:
+        test+=1
         complete_remind(message)
 
 
@@ -184,7 +186,7 @@ def delete(message):
 
     with open('bind.json', 'w') as f_o:
         json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
-    bot.reply_to(message, text="Готово")
+    bot.reply_to(message, text="✅ Готово, ваши напоминания были удалены.")
 
 
 @bot.message_handler(commands=['reminds'])
@@ -195,7 +197,6 @@ def reminds(message):
     for i in data_from_json:
         if str(user_id) in i:
             bot.reply_to(message, text='—'.join(i[str(user_id)]))
-
 
 
 bot.polling()
