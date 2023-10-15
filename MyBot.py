@@ -1,11 +1,7 @@
 import json
 import time
 import random
-import re
-import schedule
-import asyncio
-import telebot
-from telebot import types # для указание типов
+
 
 
 bot = telebot.TeleBot(token='6479236406:AAEM9osXPYtJPAx5wlPO2VB_eECBvV8NtTA', parse_mode='MARKDOWN')
@@ -19,7 +15,7 @@ def start(message):
 
     btn1 = types.KeyboardButton("📕 Об авторе")
     btn2 = types.KeyboardButton('🏹 Начать работу')
-
+    markup.add(btn2, btn1)
     with open('reg.json', 'r') as f_o:
         data_from_json = json.load(f_o)
 # ООП = user_id, username
@@ -29,19 +25,20 @@ def start(message):
     for user_data in data_from_json:
         if str(user_id) in user_data:
             user_exists = True
-            bot.reply_to(message=message,text='Ты уже начал взаимодействовать со мной, но я напомню, что основные команды в меню 😉')
+            bot.reply_to(message=message,text='Ты уже начал взаимодействовать со мной, но я напомню, что основные команды в меню 😉', reply_markup=markup)
             break
 
     if not user_exists:
         # Если пользователь не найден, добавляем его в список
-        data_from_json.append({user_id: {'username': username}})
+        user_id = str(user_id)
+        data_from_json[user_id] = {'username': username}
         with open('reg.json', 'w') as f_o:
             json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
         bot.reply_to(message=message, text=f'''Здравствуй, *{message.from_user.first_name} 😎‍*!
-    markup.add(btn2, btn1)
+    
 *Немного обо мне:* Я твой помощник, я могу помогать тебе при изучении нового материала.
 Вообще я предназначен для изучения английского, но я думаю, что мой хозяин будет против, если ты будешь использовать меня для других целей 🤫
-\n⚠️ *Подсказка:* для взаимодействия со мной используй меню.''')
+\n⚠️ *Подсказка:* для взаимодействия со мной используй меню.''', reply_markup=markup)
 
 
 
@@ -63,7 +60,7 @@ def words(message):
 
 def write(message):
 
-
+    username = message.from_user.first_name
     text = message.text
     user_id = message.from_user.id
     if text == "⏰ 1 час":
@@ -94,7 +91,8 @@ def write(message):
                 return
 
         if user_exists == False:
-            data_from_json.append({user_id: {'time': text}})
+            user_id = str(user_id)
+            data_from_json[user_id] = {'time': text}
             bot.reply_to(message=message, text=f'''Отлично, время задержки *{text} минут(а)*''')
             complete_remind(message)
 
@@ -140,26 +138,25 @@ def complete_remind(message):
             print(only_england, russian)
 
 
+
             bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words}', reply_markup=okey)
             with open('bind.json', 'r') as f_o:
                 data_from_json = json.load(f_o)
 
-            data_from_json.append({user_id: [only_england, russian, translate]})
+            data_from_json[user_id] = [only_england, russian, translate] # сделать какую-то привязку к переводу
 
             with open('bind.json', 'w') as f_o:
                 json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
 
-
-        bot.register_next_step_handler(message, update)
+        if message.text == '🔄 Обновить слова':
+            bot.register_next_step_handler(message, update)
 
 
 
 
 def update(message):
-    test = 1
-    if message.text == '🔄 Обновить слова' and test == 1:
-        test+=1
-        complete_remind(message)
+    complete_remind()
+
 
 
 @bot.message_handler(commands=['delete'])
@@ -167,21 +164,24 @@ def delete(message):
     user_id = message.from_user.id
     with open('time_user.json', 'r') as f_o:
         data_from_json = json.load(f_o)
-
+    data_from_json = list(data_from_json)
 
     for user in data_from_json:
         if str(user_id) in user:
             data_from_json.remove(user)
+    data_from_json = dict(data_from_json)
     with open('time_user.json', 'w') as f_o:
         json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
 
     with open('bind.json') as f_o:
         data_from_json = json.load(f_o)
-
+    data_from_json = list(data_from_json)
     for _ in range(2):
         for user in data_from_json:
             if str(user_id) in user:
                 data_from_json.remove(user)
+
+    data_from_json = dict(data_from_json)
 
 
     with open('bind.json', 'w') as f_o:

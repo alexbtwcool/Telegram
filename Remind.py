@@ -16,15 +16,34 @@ def reminder():
         data_from_json = json.load(f_o)
     print(type(data_from_json))
     b = 0
-    for key in data_from_json[0]:
-        b += 1
-        a = data_from_json[1].keys()
-        print(key)
+    for key in data_from_json:
+        with open('time_user.json', 'r') as f_o:
+            data_from_json = json.load(f_o)
+        for user in data_from_json:
+            if key in user:
+                bot.send_message(key, text='Алоооо')
+            else:
+                break
+        with open('time_user.json', 'w') as f_o:
+            json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
     with open('reg.json', 'w') as f_o:
         json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
 
+
+
+def privyazka():
     with open('time_user.json', 'r') as f_o:
         data_from_json = json.load(f_o)
-    print(data_from_json)
 
-reminder()
+    for i in data_from_json:
+        data_from_json[i]['Russian'] = russian
+        data_from_json[i]['English'] = england
+        data_from_json[i]['Translate'] = translate
+        print(data_from_json[i])
+
+
+
+    with open('time_user.json', 'w') as f_o:
+        json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+
+privyazka()
