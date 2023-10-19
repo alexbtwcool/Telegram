@@ -1,7 +1,10 @@
-import json
-import time
 import random
-
+import re
+import schedule
+import json
+import asyncio
+import telebot
+from telebot import types
 
 
 bot = telebot.TeleBot(token='6479236406:AAEM9osXPYtJPAx5wlPO2VB_eECBvV8NtTA', parse_mode='MARKDOWN')
@@ -94,10 +97,11 @@ def write(message):
             user_id = str(user_id)
             data_from_json[user_id] = {'time': text}
             bot.reply_to(message=message, text=f'''Отлично, время задержки *{text} минут(а)*''')
-            complete_remind(message)
+
 
             with open('time_user.json', 'w') as f_o:
                 json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+            complete_remind(message)
 
     except ValueError:
         if type(int(text)) != int:
@@ -106,9 +110,7 @@ def write(message):
 
 
 def complete_remind(message):
-    okey = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    update_words = types.KeyboardButton('🔄 Обновить слова')
-    okey.add(update_words)
+
     user_id = message.from_user.id
 
     text_words = []
@@ -116,7 +118,6 @@ def complete_remind(message):
         with open('word.json', 'r') as f_o:
             data_from_json = json.load(f_o)
         words = data_from_json
-
 
         for i in words:
             all = i['words']
@@ -133,20 +134,26 @@ def complete_remind(message):
             russian, only_england = ', '.join(russian), ', '.join(england)
             only_england = re.sub('[ЁёА-я-—]', '', only_england)
             russian = re.sub("[a-zA-Z-—]", "", russian)
-            print(four_words)
             four_words = ', '.join(four_words)
-            print(only_england, russian)
 
 
 
-            bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words}', reply_markup=okey)
-            with open('bind.json', 'r') as f_o:
-                data_from_json = json.load(f_o)
+            bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words}')
 
-            data_from_json[user_id] = [only_england, russian, translate] # сделать какую-то привязку к переводу
+            with open('time_user.json', 'r') as f_o:
+                time_json = json.load(f_o)
+            user_id = str(user_id)
+            for id in time_json:
 
-            with open('bind.json', 'w') as f_o:
-                json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
+                if id == str(user_id):
+
+                    time_json[id]['Russian'] = russian
+                    time_json[id]['English'] = only_england
+                    time_json[id]['Translate'] = translate
+
+            with open('time_user.json', 'w') as f_o:
+                json.dump(time_json, f_o, indent=4, ensure_ascii=False)
+
 
         if message.text == '🔄 Обновить слова':
             bot.register_next_step_handler(message, update)
@@ -164,28 +171,16 @@ def delete(message):
     user_id = message.from_user.id
     with open('time_user.json', 'r') as f_o:
         data_from_json = json.load(f_o)
-    data_from_json = list(data_from_json)
 
-    for user in data_from_json:
-        if str(user_id) in user:
-            data_from_json.remove(user)
-    data_from_json = dict(data_from_json)
+    for user in list(data_from_json):
+        if str(user_id) == user:
+            del data_from_json[user]
+
+
     with open('time_user.json', 'w') as f_o:
         json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
 
-    with open('bind.json') as f_o:
-        data_from_json = json.load(f_o)
-    data_from_json = list(data_from_json)
-    for _ in range(2):
-        for user in data_from_json:
-            if str(user_id) in user:
-                data_from_json.remove(user)
 
-    data_from_json = dict(data_from_json)
-
-
-    with open('bind.json', 'w') as f_o:
-        json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
     bot.reply_to(message, text="✅ Готово, ваши напоминания были удалены.")
 
 
