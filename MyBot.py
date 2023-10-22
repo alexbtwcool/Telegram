@@ -56,7 +56,8 @@ def words(message):
 
     markup.add(time_60, time_180, time_480, time_1240)
     bot.reply_to(message=message, text=f"""Отправь задержку, вот так: \n
-*60* \n \n(напоминание произойдет через 60 минут), также можешь использовать кнопки в панели 😉""", reply_markup=markup)
+*60* \n \n(повторение слов произойдет через 60 минут, всего 2 повторения), также можешь использовать кнопки в панели 😉""", reply_markup=markup)
+
     bot.register_next_step_handler(message, write)
 
 
@@ -95,7 +96,7 @@ def write(message):
 
         if user_exists == False:
             user_id = str(user_id)
-            data_from_json[user_id] = {'time': text}
+            data_from_json[user_id] = {'time': text, 'counter': 2}
             bot.reply_to(message=message, text=f'''Отлично, время задержки *{text} минут(а)*''')
 
 
@@ -150,6 +151,7 @@ def complete_remind(message):
                     time_json[id]['Russian'] = russian
                     time_json[id]['English'] = only_england
                     time_json[id]['Translate'] = translate
+                    time_json[id]['Four_words'] = four_words
 
             with open('time_user.json', 'w') as f_o:
                 json.dump(time_json, f_o, indent=4, ensure_ascii=False)

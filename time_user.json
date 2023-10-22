@@ -1,9 +1,20 @@
 {
     "6224170878": {
-        "time": 6,
-        "Russian": "22"
+        "time": -77,
+        "Russian": "22",
+        "Translate": 1
     },
     "857813877": {
-        "time": 180
+        "time": 0,
+        "counter": 0,
+        "Russian": "  отец,   может,   отец",
+        "English": "father  ",
+        "Translate": {
+            "high ": "высокий",
+            "at ": "на",
+            "their ": "их",
+            "we ": "мы"
+        },
+        "Four_words": "father Ч отец, can Ч может, time Ч врем€, mother Ч мать"
     }
 }
