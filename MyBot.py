@@ -5,6 +5,8 @@ import json
 import asyncio
 import telebot
 from telebot import types
+from telebot.types import Message
+import time
 
 
 bot = telebot.TeleBot(token='6479236406:AAEM9osXPYtJPAx5wlPO2VB_eECBvV8NtTA', parse_mode='MARKDOWN')
@@ -34,7 +36,7 @@ def start(message):
     if not user_exists:
         # Если пользователь не найден, добавляем его в список
         user_id = str(user_id)
-        data_from_json[user_id] = {'username': username}
+        data_from_json[user_id] = {'username': username, 'message': message}
         with open('reg.json', 'w') as f_o:
             json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
         bot.reply_to(message=message, text=f'''Здравствуй, *{message.from_user.first_name} 😎‍*!
@@ -115,50 +117,40 @@ def complete_remind(message):
     user_id = message.from_user.id
 
     text_words = []
-    for _ in range(2):
-        with open('word.json', 'r') as f_o:
-            data_from_json = json.load(f_o)
-        words = data_from_json
 
-        for i in words:
-            all = i['words']
-            four_words = random.sample(all, 4)
-            duplicates = []
+    with open('word.json', 'r') as f_o:
+        data_from_json = json.load(f_o)
+    words = data_from_json
 
-            england, russian = random.SystemRandom().sample(four_words,1), random.SystemRandom().sample(four_words, 3)
-            if england not in russian:
-                russian.pop(1)
-                russian.append(''.join(england))
-                random.shuffle(russian)
+    for i in words:
+        all = i['words']
+        four_words = random.sample(all, 4)
+        translate = {}
 
-            translate = (' '.join(england)).split('—')[1].replace(' ', '')
-            russian, only_england = ', '.join(russian), ', '.join(england)
-            only_england = re.sub('[ЁёА-я-—]', '', only_england)
-            russian = re.sub("[a-zA-Z-—]", "", russian)
-            four_words = ', '.join(four_words)
+        for i in four_words:
+            i = i.split('—')
+            i[1] = i[1].strip()
+            translate[i[0]] = i[1]
+            print(translate)
 
+        print(type(four_words))
+        four_words_text = ', '.join(four_words).replace("'", "**")
+        bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words_text}')
 
-
-            bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words}')
-
-            with open('time_user.json', 'r') as f_o:
-                time_json = json.load(f_o)
-            user_id = str(user_id)
-            for id in time_json:
-
-                if id == str(user_id):
-
-                    time_json[id]['Russian'] = russian
-                    time_json[id]['English'] = only_england
-                    time_json[id]['Translate'] = translate
-                    time_json[id]['Four_words'] = four_words
-
-            with open('time_user.json', 'w') as f_o:
-                json.dump(time_json, f_o, indent=4, ensure_ascii=False)
+        with open('time_user.json', 'r') as f_o:
+            time_json = json.load(f_o)
 
 
-        if message.text == '🔄 Обновить слова':
-            bot.register_next_step_handler(message, update)
+        for i in time_json:
+            if i == str(user_id):
+                time_json[i]['Translate'] = translate
+                time_json[i]['Four_words'] = four_words_text
+
+        with open('time_user.json', 'w') as f_o:
+            json.dump(time_json, f_o, indent=4, ensure_ascii=False)
+
+    if message.text == '🔄 Обновить слова':
+        bot.register_next_step_handler(message, update)
 
 
 
@@ -184,16 +176,6 @@ def delete(message):
 
 
     bot.reply_to(message, text="✅ Готово, ваши напоминания были удалены.")
-
-
-@bot.message_handler(commands=['reminds'])
-def reminds(message):
-    user_id = message.from_user.id
-    with open('bind.json', 'r') as f_o:
-        data_from_json = json.load(f_o)
-    for i in data_from_json:
-        if str(user_id) in i:
-            bot.reply_to(message, text='—'.join(i[str(user_id)]))
 
 
 bot.polling()

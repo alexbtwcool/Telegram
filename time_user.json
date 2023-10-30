@@ -7,14 +7,12 @@
     "857813877": {
         "time": 0,
         "counter": 0,
-        "Russian": "  отец,   может,   отец",
-        "English": "father  ",
         "Translate": {
-            "high ": "высокий",
-            "at ": "на",
-            "their ": "их",
-            "we ": "мы"
+            "but ": "но",
+            "each ": "каждый",
+            "can ": "может",
+            "also ": "также"
         },
-        "Four_words": "father Ч отец, can Ч может, time Ч врем€, mother Ч мать"
+        "Four_words": "but Ч но, each Ч каждый, can Ч может, also Ч также"
     }
 }
