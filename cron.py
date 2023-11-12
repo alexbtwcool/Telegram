@@ -1,5 +1,6 @@
 import json
 import telebot
+from functools import partial
 from telebot import types # для указание типов
 from telebot.types import Message
 
@@ -50,12 +51,12 @@ def complete(message):
             word1, word2, word3, word4 = types.KeyboardButton(ok[0]), types.KeyboardButton(
                 ok[1]), types.KeyboardButton(ok[2]), types.KeyboardButton(ok[3])
             markup.add(word1, word2, word3, word4)
-            bot.send_message(int(user), text='Выберите верное слово', reply_markup=markup)
+            message = bot.send_message(int(user), text='Выберите верное слово', reply_markup=markup)
             time.sleep(2)
-            bot.register_next_step_handler(next_step(user, random_word))
+            bot.register_next_step_handler(message, partial(self.next_step, message, user, random_word))
 
 
-def next_step(self, user, random_word):
+def next_step(self, message, user, random_word):
     it_word = data_json[user]['Translate'].get(random_word)
     print(message)
 
