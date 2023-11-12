@@ -3,7 +3,7 @@ from cron import  screw
 import time
 
 while True:
-
+    time.sleep(10)
     with open('time_user.json', 'r') as f_o:
         data_json = json.load(f_o)
 
@@ -20,4 +20,3 @@ while True:
     with open('time_user.json', 'w') as f_o:
         json.dump(data_json, f_o, indent=4, ensure_ascii=False)
 
-    time.sleep(60)

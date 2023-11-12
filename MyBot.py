@@ -98,7 +98,8 @@ def write(message):
 
         if user_exists == False:
             user_id = str(user_id)
-            data_from_json[user_id] = {'time': text, 'counter': 2}
+            data_from_json[user_id] = {'time': text, 'counter': 2, 'const_time': text}
+
             bot.reply_to(message=message, text=f'''Отлично, время задержки *{text} минут(а)*''')
 
 
@@ -176,6 +177,40 @@ def delete(message):
 
 
     bot.reply_to(message, text="✅ Готово, ваши напоминания были удалены.")
+
+
+@bot.message_handler(commands=['test'])
+def complete(message):
+    print(1)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    with open('time_user.json', 'r') as f_o:
+        data_json = json.load(f_o)
+
+    for user in data_json:
+        if user == str(message.from_user.id):
+            random_word = random.choice(list(data_json[user]['Translate'].keys()))
+            print(random_word)
+            ok = list((data_json[user]['Translate'].values()))
+            word1, word2, word3, word4 = types.KeyboardButton(ok[0]), types.KeyboardButton(
+                ok[1]), types.KeyboardButton(ok[2]), types.KeyboardButton(ok[3])
+            markup.add(word1, word2, word3, word4)
+            bot.send_message(int(user), text='Выберите верное слово', reply_markup=markup)
+            time.sleep(2)
+            bot.register_next_step_handler(message, next_step, user, random_word)
+        else:
+            break
+
+
+def next_step(message, user, random_word):
+
+    it_word = data_json[user]['Translate'].get(random_word)
+    print(random_word)
+
+    if message == it_word:
+        bot.send_message(int(user), text='Всё верно.')
+
+    else:
+        bot.send_message(int(user), text='Неверно.')
 
 
 bot.polling()

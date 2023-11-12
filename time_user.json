@@ -1,7 +1,8 @@
 {
     "6224170878": {
-        "time": 47,
-        "counter": 1,
+        "time": 0,
+        "counter": 0,
+        "const_time": 60,
         "Translate": {
             "the of ": "из / о",
             "is ": "€вл€етс€",
@@ -11,14 +12,15 @@
         "Four_words": "the of Ч из / о, is Ч €вл€етс€, father Ч отец, three Ч три"
     },
     "857813877": {
-        "time": 0,
+        "time": 31,
         "counter": 1,
+        "const_time": 60,
         "Translate": {
-            "the of ": "из / о",
-            "is ": "€вл€етс€",
-            "father ": "отец",
-            "three ": "три"
+            "as ": "как",
+            "put ": "ставить",
+            "some ": "некоторый",
+            "each ": "каждый"
         },
-        "Four_words": "the of Ч из / о, is Ч €вл€етс€, father Ч отец, three Ч три"
+        "Four_words": "as Ч как, put Ч ставить, some Ч некоторый, each Ч каждый"
     }
 }
