@@ -1,18 +1,24 @@
 {
     "6224170878": {
-        "time": -77,
-        "Russian": "22",
-        "Translate": 1
+        "time": 47,
+        "counter": 1,
+        "Translate": {
+            "the of ": "из / о",
+            "is ": "€вл€етс€",
+            "father ": "отец",
+            "three ": "три"
+        },
+        "Four_words": "the of Ч из / о, is Ч €вл€етс€, father Ч отец, three Ч три"
     },
     "857813877": {
         "time": 0,
-        "counter": 0,
+        "counter": 1,
         "Translate": {
-            "but ": "но",
-            "each ": "каждый",
-            "can ": "может",
-            "also ": "также"
+            "the of ": "из / о",
+            "is ": "€вл€етс€",
+            "father ": "отец",
+            "three ": "три"
         },
-        "Four_words": "but Ч но, each Ч каждый, can Ч может, also Ч также"
+        "Four_words": "the of Ч из / о, is Ч €вл€етс€, father Ч отец, three Ч три"
     }
 }

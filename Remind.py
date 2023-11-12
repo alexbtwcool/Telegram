@@ -15,25 +15,27 @@ def accept():
     return a
 
 @bot.message_handler(content_types='text')
-def complete():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    with open('time_user.json', 'r') as f_o:
-        data_json = json.load(f_o)
 
-    for user in data_json:
-        if user == "857813877":
-            random_word = random.choice(list(data_json[user]['Translate'].keys()))
-            print(random_word)
-            ok = list((data_json[user]['Translate'].values()))
-            word1, word2, word3, word4 = types.KeyboardButton(ok[0]), types.KeyboardButton(ok[1]), types.KeyboardButton(ok[2]), types.KeyboardButton(ok[3])
-            markup.add(word1, word2, word3, word4)
-            bot.send_message(int(user), text='Отправьте команду /accept, когда ', reply_markup=markup)
-            time.sleep(2)
-            bot.register_next_step_handler(next_step(user,random_word,bot.get_chat_member(user,user)))
+def complete(message):
+    if message.text == 'Начнём.':
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        with open('time_user.json', 'r') as f_o:
+            data_json = json.load(f_o)
+
+        for user in data_json:
+            if user == "857813877":
+                random_word = random.choice(list(data_json[user]['Translate'].keys()))
+                print(random_word)
+                ok = list((data_json[user]['Translate'].values()))
+                word1, word2, word3, word4 = types.KeyboardButton(ok[0]), types.KeyboardButton(ok[1]), types.KeyboardButton(ok[2]), types.KeyboardButton(ok[3])
+                markup.add(word1, word2, word3, word4)
+                bot.send_message(int(user), text='Отправьте команду /accept, когда ', reply_markup=markup)
+                time.sleep(2)
+                bot.register_next_step_handler(next_step(user,random_word,message))
 
 
 
-@bot.message_handler(content_types='text')
+
 def next_step(user,random_word, message):
 
 
@@ -47,29 +49,20 @@ def next_step(user,random_word, message):
         bot.send_message(int(user), text='Неверно.')
 
 
-def scheedule(user_id):
+def scheedul(user_id):
     with open('time_user.json', 'r') as f_o:
         data_json = json.load(f_o)
 
     for user in data_json:
-        if user == str(user_id):
-            four_words = data_json[user]['Four_words']
+
+            data_json[user]["counter"] = data_json[user]['counter'] - 1
             bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words}')
-            if data_json[user]["counter"] != 0:
-                data_json[user]["counter"] = data_json[user]['counter'] - 1
-                bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words}')
 
+    with open('time_user.json', 'w') as f_o:
+        json.dump(data_json, f_o, indent=4, ensure_ascii=False)
 
-            else:
-                complete()
-
-        else:
-            pass
-        with open('time_user.json', 'w') as f_o:
-            json.dump(data_json, f_o, indent=4, ensure_ascii=False)
-
-while True:
-    time.sleep(5)
+"""while True:
+    time.sleep(1)
     with open('time_user.json', 'r') as f_o:
         data_json = json.load(f_o)
 
@@ -77,12 +70,8 @@ while True:
         if data_json[user]['time'] != 0:
             data_json[user]['time'] = int(data_json[user]['time'] - 1)
 
-        else:
-            print(user)
+    with open('time_user.json', 'w') as f_o:
+        json.dump(data_json, f_o, indent=4, ensure_ascii=False)"""
 
-            scheedule(user)
-
-
-    print('-1')
 
 bot.polling()
