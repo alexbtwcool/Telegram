@@ -1,9 +1,14 @@
 import json
+
+import MyBot
 from cron import  screw
 import time
+from MyBot import change_json
+
 
 while True:
-    time.sleep(10)
+    print(1)
+    time.sleep(1)
     with open('time_user.json', 'r') as f_o:
         data_json = json.load(f_o)
 
@@ -14,8 +19,7 @@ while True:
 
 
         else:
-            screw_instance = screw(user)
-            screw_instance.change_json()
+            MyBot.change_json(user)
 
     with open('time_user.json', 'w') as f_o:
         json.dump(data_json, f_o, indent=4, ensure_ascii=False)

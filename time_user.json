@@ -12,15 +12,27 @@
         "Four_words": "the of Ч из / о, is Ч €вл€етс€, father Ч отец, three Ч три"
     },
     "857813877": {
-        "time": 31,
-        "counter": 1,
+        "time": 60,
+        "counter": 2,
         "const_time": 60,
         "Translate": {
-            "as ": "как",
-            "put ": "ставить",
-            "some ": "некоторый",
-            "each ": "каждый"
+            "on ": "на",
+            "need ": "необходимость",
+            "from ": "из",
+            "house ": "дом"
         },
-        "Four_words": "as Ч как, put Ч ставить, some Ч некоторый, each Ч каждый"
+        "Four_words": "on Ч на, need Ч необходимость, from Ч из, house Ч дом"
+    },
+    "1234799770": {
+        "time": 60,
+        "counter": 2,
+        "const_time": 60,
+        "Translate": {
+            "and ": "и",
+            "ask ": "спрашивать",
+            "the of ": "из / о",
+            "set ": "задавать / комплект"
+        },
+        "Four_words": "and Ч и, ask Ч спрашивать, the of Ч из / о, set Ч задавать / комплект"
     }
 }
