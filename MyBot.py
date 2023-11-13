@@ -179,29 +179,6 @@ def delete(message):
     bot.reply_to(message, text="✅ Готово, ваши напоминания были удалены.")
 
 
-def change_json(user_id):
-
-    with open('time_user.json', 'r') as f_o:
-        data_json = json.load(f_o)
-
-    for user in data_json:
-
-        four_words = data_json[user]['Four_words']
-
-        if user_id == user and data_json[user]["counter"] > 0 and data_json[user]['time'] == 0:
-            data_json[user]["counter"] = data_json[user]['counter'] - 1
-            bot.send_message(user, text=f'Ваши слова для обучения: {four_words}')
-            data_json[user]['time'] = data_json[user]['const_time']
-
-        else:
-            bot.send_message(user, text=f'Если Вы готовы напишите /test')
-
-
-
-    with open('time_user.json', 'w') as f_o:
-        json.dump(data_json, f_o, indent=4, ensure_ascii=False)
-
-
 
 @bot.message_handler(commands=['test'])
 def complete(message):
@@ -219,7 +196,6 @@ def complete(message):
                 ok[1]), types.KeyboardButton(ok[2]), types.KeyboardButton(ok[3])
             markup.add(word1, word2, word3, word4)
             bot.send_message(int(user), text=f'Отправьте перевод слова {random_word}', reply_markup=markup)
-            time.sleep(2)
             bot.register_next_step_handler(message, next_step, user, random_word)
 
 
@@ -233,11 +209,21 @@ def next_step(message, user, random_word):
 
     if message.text == it_word:
         bot.send_message(int(user), text='Всё верно.')
-        MyBot.words(message)
+
+
+        del data_json[user]
+
+        with open('time_user.json', 'w') as f_o:
+            json.dump(data_json, f_o, indent=4, ensure_ascii=False)
+        words(message)
+
 
     else:
         bot.send_message(int(user), text='Неверно.')
+        data_json[message.from_user.id]['time'] = data_json[message.from_user.id]['const_time']
         complete(message)
+
+
 
 
 

@@ -1,18 +1,6 @@
 {
-    "6224170878": {
-        "time": 0,
-        "counter": 0,
-        "const_time": 60,
-        "Translate": {
-            "the of ": "из / о",
-            "is ": "€вл€етс€",
-            "father ": "отец",
-            "three ": "три"
-        },
-        "Four_words": "the of Ч из / о, is Ч €вл€етс€, father Ч отец, three Ч три"
-    },
     "857813877": {
-        "time": 60,
+        "time": 3,
         "counter": 2,
         "const_time": 60,
         "Translate": {
@@ -23,16 +11,16 @@
         },
         "Four_words": "on Ч на, need Ч необходимость, from Ч из, house Ч дом"
     },
-    "1234799770": {
-        "time": 60,
+    "6224170878": {
+        "time": 166,
         "counter": 2,
-        "const_time": 60,
+        "const_time": 180,
         "Translate": {
-            "and ": "и",
-            "ask ": "спрашивать",
-            "the of ": "из / о",
-            "set ": "задавать / комплект"
+            "read ": "читать",
+            "you ": "ты",
+            "earth ": "земл€",
+            "end ": "конец"
         },
-        "Four_words": "and Ч и, ask Ч спрашивать, the of Ч из / о, set Ч задавать / комплект"
+        "Four_words": "read Ч читать, you Ч ты, earth Ч земл€, end Ч конец"
     }
 }
