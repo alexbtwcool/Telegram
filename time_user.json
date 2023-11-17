@@ -1,19 +1,7 @@
 {
-    "857813877": {
-        "time": 3,
-        "counter": 2,
-        "const_time": 60,
-        "Translate": {
-            "on ": "на",
-            "need ": "необходимость",
-            "from ": "из",
-            "house ": "дом"
-        },
-        "Four_words": "on Ч на, need Ч необходимость, from Ч из, house Ч дом"
-    },
     "6224170878": {
-        "time": 166,
-        "counter": 2,
+        "time": 110,
+        "counter": 0,
         "const_time": 180,
         "Translate": {
             "read ": "читать",
@@ -22,5 +10,10 @@
             "end ": "конец"
         },
         "Four_words": "read Ч читать, you Ч ты, earth Ч земл€, end Ч конец"
+    },
+    "744090765": {
+        "time": 0,
+        "counter": 2,
+        "const_time": 60
     }
 }

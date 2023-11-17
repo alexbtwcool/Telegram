@@ -7,9 +7,11 @@ import telebot
 from telebot import types
 from telebot.types import Message
 import time
+from envparse import Env
 
-
-bot = telebot.TeleBot(token='6479236406:AAEM9osXPYtJPAx5wlPO2VB_eECBvV8NtTA', parse_mode='MARKDOWN')
+env = Env()
+TOKEN = env.str('TOKEN')
+bot = telebot.TeleBot(token=TOKEN, parse_mode='MARKDOWN')
 
 
 
@@ -36,7 +38,7 @@ def start(message):
     if not user_exists:
         # Если пользователь не найден, добавляем его в список
         user_id = str(user_id)
-        data_from_json[user_id] = {'username': username, 'message': message}
+        data_from_json[user_id] = {'username': username}
         with open('reg.json', 'w') as f_o:
             json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
         bot.reply_to(message=message, text=f'''Здравствуй, *{message.from_user.first_name} 😎‍*!
@@ -125,7 +127,8 @@ def complete_remind(message):
 
     for i in words:
         all = i['words']
-        four_words = random.sample(all, 4)
+        four_words = random.choices(all, k=4)
+
         translate = {}
 
         for i in four_words:
@@ -189,6 +192,7 @@ def complete(message):
 
     for user in data_json:
         if user == str(message.from_user.id):
+
             random_word = random.choice(list(data_json[user]['Translate'].keys()))
             print(random_word)
             ok = list((data_json[user]['Translate'].values()))
