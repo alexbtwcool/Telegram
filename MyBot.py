@@ -35,7 +35,7 @@ def start(message):
             bot.reply_to(message=message,text='Ты уже начал взаимодействовать со мной, но я напомню, что основные команды в меню 😉', reply_markup=markup)
             break
 
-    if not user_exists:
+        if not user_exists:
         # Если пользователь не найден, добавляем его в список
         user_id = str(user_id)
         data_from_json[user_id] = {'username': username}
@@ -68,6 +68,7 @@ def words(message):
 
 def write(message):
 
+
     username = message.from_user.first_name
     text = message.text
     user_id = message.from_user.id
@@ -85,7 +86,7 @@ def write(message):
             text = int(text)
         except ValueError:
             bot.reply_to(message, text='⚠️ ЗАДЕРЖКА ДОЛЖНА БЫТЬ УКАЗАНА В ЦИФРАХ!!!')
-            return
+            return words(message)
         print(text)
     try:
 
@@ -119,44 +120,28 @@ def complete_remind(message):
 
     user_id = message.from_user.id
 
-    text_words = []
-
     with open('word.json', 'r') as f_o:
         data_from_json = json.load(f_o)
-    words = data_from_json
 
-    for i in words:
-        all = i['words']
-        four_words = random.choices(all, k=4)
+    word = random.choices(list(data_from_json['words'].items()), k=4)
 
-        translate = {}
-
-        for i in four_words:
-            i = i.split('—')
-            i[1] = i[1].strip()
-            translate[i[0]] = i[1]
-            print(translate)
-
-        print(type(four_words))
-        four_words_text = ', '.join(four_words).replace("'", "**")
-        bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words_text}')
+    four_words = ''
+    translate = dict(word)
+    for i in word:
+        four_words += ' — '.join(i) + ", "
 
         with open('time_user.json', 'r') as f_o:
             time_json = json.load(f_o)
 
-
-        for i in time_json:
-            if i == str(user_id):
-                time_json[i]['Translate'] = translate
-                time_json[i]['Four_words'] = four_words_text
+        for s in time_json:
+            if s == str(user_id):
+                time_json[s]['Translate'] = translate
+                time_json[s]['Four_words'] = four_words[:-2]
 
         with open('time_user.json', 'w') as f_o:
             json.dump(time_json, f_o, indent=4, ensure_ascii=False)
 
-    if message.text == '🔄 Обновить слова':
-        bot.register_next_step_handler(message, update)
-
-
+    bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words[:-2]}')
 
 
 def update(message):
@@ -207,12 +192,13 @@ def next_step(message, user, random_word):
     with open('time_user.json', 'r') as f_o:
         data_json = json.load(f_o)
 
-    it_word = data_json[user]['Translate'].get(random_word)
+    it_word = data_json[str(user)]['Translate'].get(random_word)
     print(it_word, '\n', random_word)
     print(message.text)
 
     if message.text == it_word:
         bot.send_message(int(user), text='Всё верно.')
+
 
 
         del data_json[user]
@@ -224,7 +210,7 @@ def next_step(message, user, random_word):
 
     else:
         bot.send_message(int(user), text='Неверно.')
-        data_json[message.from_user.id]['time'] = data_json[message.from_user.id]['const_time']
+        data_json[str(message.from_user.id)]['time'] = data_json[message.from_user.id]['const_time']
         complete(message)
 
 

@@ -1,18 +1,18 @@
 {
     "6224170878": {
-        "time": 110,
+        "time": 441,
         "counter": 0,
         "const_time": 180,
         "Translate": {
-            "read ": "читать",
-            "you ": "ты",
-            "earth ": "земл€",
-            "end ": "конец"
+            "read ": "??????",
+            "you ": "??",
+            "earth ": "?????",
+            "end ": "?????"
         },
-        "Four_words": "read Ч читать, you Ч ты, earth Ч земл€, end Ч конец"
+        "Four_words": "read Ч ??????, you Ч ??, earth Ч ?????, end Ч ?????"
     },
     "744090765": {
-        "time": 0,
+        "time": 9441,
         "counter": 2,
         "const_time": 60
     }
