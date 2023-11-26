@@ -8,44 +8,77 @@ from telebot import types
 from telebot.types import Message
 import time
 from envparse import Env
+import psycopg2
+from config import host, user, password, db_name
 
 env = Env()
 TOKEN = env.str('TOKEN')
 bot = telebot.TeleBot(token=TOKEN, parse_mode='MARKDOWN')
+
+def user_registration(user_id, username):
+    conn = psycopg2.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=db_name
+    )
+
+    conn.autocommit = True
+    cur = conn.cursor()
+    cur.execute('''INSERT INTO users (user_id, username) VALUES (%s, %s);''', [user_id, username])
+
+
+    cur.execute('''SELECT * FROM users''')
+#    print(cur.fetchall())
+
+#user_registration('10', 'SAnek232')
+
+def user_selection(user_id, username, message):
+
+    conn = psycopg2.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=db_name
+    )
+
+    conn.autocommit = True
+    cur = conn.cursor()
+    cur.execute('''SELECT * FROM users WHERE user_id = %s;''', [user_id])
+
+
+    if cur.fetchone() is None:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+        btn1 = types.KeyboardButton("📕 Об авторе")
+        btn2 = types.KeyboardButton('🏹 Начать работу')
+        markup.add(btn2, btn1)
+        user_registration(user_id,username)
+        cur.execute('''SELECT * FROM users WHERE user_id = %s;''', [user_id])
+        bot.reply_to(message=message, text=f'''Здравствуй, *{message.from_user.first_name} 😎‍*!
+
+        *Немного обо мне:* Я твой помощник, я могу помогать тебе при изучении нового материала.
+        Вообще я предназначен для изучения английского, но я думаю, что мой хозяин будет против, если ты будешь использовать меня для других целей 🤫
+        \n⚠️ *Подсказка:* для взаимодействия со мной используй меню.''', reply_markup=markup)
+
+
+
+    else:
+        bot.reply_to(message, text='Ты уже начал взаимодействовать со мной, но я напомню, что основные команды в меню 😉')
 
 
 
 @bot.message_handler(commands=['start'])
 def start(message):
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-
-    btn1 = types.KeyboardButton("📕 Об авторе")
-    btn2 = types.KeyboardButton('🏹 Начать работу')
-    markup.add(btn2, btn1)
     with open('reg.json', 'r') as f_o:
         data_from_json = json.load(f_o)
 # ООП = user_id, username
     user_id = message.from_user.id
     username = message.from_user.first_name
     user_exists = False
-    for user_data in data_from_json:
-        if str(user_id) in user_data:
-            user_exists = True
-            bot.reply_to(message=message,text='Ты уже начал взаимодействовать со мной, но я напомню, что основные команды в меню 😉', reply_markup=markup)
-            break
+    user_selection(user_id,username,message)
 
-        if not user_exists:
-        # Если пользователь не найден, добавляем его в список
-        user_id = str(user_id)
-        data_from_json[user_id] = {'username': username}
-        with open('reg.json', 'w') as f_o:
-            json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
-        bot.reply_to(message=message, text=f'''Здравствуй, *{message.from_user.first_name} 😎‍*!
-    
-*Немного обо мне:* Я твой помощник, я могу помогать тебе при изучении нового материала.
-Вообще я предназначен для изучения английского, но я думаю, что мой хозяин будет против, если ты будешь использовать меня для других целей 🤫
-\n⚠️ *Подсказка:* для взаимодействия со мной используй меню.''', reply_markup=markup)
 
 
 
@@ -56,12 +89,9 @@ def words(message):
     time_180 = types.KeyboardButton('🕜 3 часа')
     time_480 = types.KeyboardButton('🕣 9 часов')
     time_1240 = types.KeyboardButton('🕛 24 часа')
-
-
     markup.add(time_60, time_180, time_480, time_1240)
     bot.reply_to(message=message, text=f"""Отправь задержку, вот так: \n
 *60* \n \n(повторение слов произойдет через 60 минут, всего 2 повторения), также можешь использовать кнопки в панели 😉""", reply_markup=markup)
-
     bot.register_next_step_handler(message, write)
 
 
