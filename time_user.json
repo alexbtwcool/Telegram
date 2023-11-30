@@ -15,5 +15,17 @@
         "time": 9441,
         "counter": 2,
         "const_time": 60
+    },
+    "857813877": {
+        "time": 5,
+        "counter": 2,
+        "const_time": 5,
+        "Translate": {
+            "on": "на",
+            "here": "здесь",
+            "house": "дом",
+            "try": "пробовать / пытатьс€"
+        },
+        "Four_words": "were Ч были, hot Ч гор€чий / жарко, are Ч €вл€ютс€, for Ч дл€"
     }
 }

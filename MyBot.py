@@ -97,7 +97,15 @@ def words(message):
 
 
 def write(message):
+    conn = psycopg2.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=db_name
+    )
 
+    conn.autocommit = True
+    cur = conn.cursor()
 
     username = message.from_user.first_name
     text = message.text
@@ -120,24 +128,15 @@ def write(message):
         print(text)
     try:
 
-        user_exists = False
-        with open('time_user.json', 'r') as f_o:
-            data_from_json = json.load(f_o)
-        for item in data_from_json:
-            if str(user_id) in item:
+        cur.execute('''SELECT 1 FROM time_user WHERE user_id = %s;''', [user_id])
+        if cur.fetchone() is not None:
                 bot.reply_to(message=message, text='Вы уже установили напоминание. Если желаете удалить текущие слова - /delete')
-                user_exists = True
                 return
 
-        if user_exists == False:
+        else:
             user_id = str(user_id)
-            data_from_json[user_id] = {'time': text, 'counter': 2, 'const_time': text}
-
+            cur.execute('''INSERT INTO time_user(user_id, time, const_time) VALUES(%s,%s,%s);''', [user_id, text, text])
             bot.reply_to(message=message, text=f'''Отлично, время задержки *{text} минут(а)*''')
-
-
-            with open('time_user.json', 'w') as f_o:
-                json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
             complete_remind(message)
 
     except ValueError:
@@ -150,28 +149,46 @@ def complete_remind(message):
 
     user_id = message.from_user.id
 
-    with open('word.json', 'r') as f_o:
-        data_from_json = json.load(f_o)
+    conn = psycopg2.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=db_name
+    )
 
-    word = random.choices(list(data_from_json['words'].items()), k=4)
+    conn.autocommit = True
+    cur = conn.cursor()
+    cur.execute('''SELECT english FROM words;''')
+    words = cur.fetchall()
+    english = random.choices(words, k=4)
+    print(english)
+    four_word = ''
+    translate = {}
+    for i in english:
+        one_english = ''.join(i)
+        print(''.join(i))
+        cur.execute('''SELECT russian FROM words WHERE english = %s''', [i])
+        russian = ''.join(cur.fetchone())
+        print(russian)
+        four_word += one_english + ' — ' + russian + ', '
+        translate.update({one_english: russian})
 
-    four_words = ''
-    translate = dict(word)
-    for i in word:
-        four_words += ' — '.join(i) + ", "
+    four_word = four_word[:-2]
 
-        with open('time_user.json', 'r') as f_o:
-            time_json = json.load(f_o)
+    with open('time_user.json', 'r') as f_o:
+        time_json = json.load(f_o)
 
-        for s in time_json:
-            if s == str(user_id):
-                time_json[s]['Translate'] = translate
-                time_json[s]['Four_words'] = four_words[:-2]
+    print(four_word)
 
-        with open('time_user.json', 'w') as f_o:
-            json.dump(time_json, f_o, indent=4, ensure_ascii=False)
+    for s in time_json:
+        if s == str(user_id):
+            time_json[s]['Translate'] = translate
+            time_json[s]['Four_words'] = four_word
 
-    bot.send_message(user_id, text=f'Ваши слова для обучения: {four_words[:-2]}')
+    with open('time_user.json', 'w') as f_o:
+        json.dump(time_json, f_o, indent=4, ensure_ascii=False)
+
+    bot.send_message(user_id, text=f'Ваши слова для обучения: {four_word}')
 
 
 def update(message):
