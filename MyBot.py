@@ -11,43 +11,34 @@ from envparse import Env
 import psycopg2
 from config import host, user, password, db_name
 
+
 env = Env()
 TOKEN = env.str('TOKEN')
 bot = telebot.TeleBot(token=TOKEN, parse_mode='MARKDOWN')
-
-def user_registration(user_id, username):
-    conn = psycopg2.connect(
+conn = psycopg2.connect(
         host=host,
         user=user,
         password=password,
-        database=db_name
-    )
+        database=db_name)
+cur = conn.cursor()
+
+
+def user_registration(user_id, username):
 
     conn.autocommit = True
     cur = conn.cursor()
+
     cur.execute('''INSERT INTO users (user_id, username) VALUES (%s, %s);''', [user_id, username])
-
-
     cur.execute('''SELECT * FROM users''')
-#    print(cur.fetchall())
 
-#user_registration('10', 'SAnek232')
 
 def user_selection(user_id, username, message):
 
-    conn = psycopg2.connect(
-        host=host,
-        user=user,
-        password=password,
-        database=db_name
-    )
-
     conn.autocommit = True
     cur = conn.cursor()
+
     cur.execute('''SELECT * FROM users WHERE user_id = %s;''', [user_id])
-
-
-    if cur.fetchone() is None:
+    if cur.fetchone() is  None:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
         btn1 = types.KeyboardButton("📕 Об авторе")
@@ -71,15 +62,10 @@ def user_selection(user_id, username, message):
 @bot.message_handler(commands=['start'])
 def start(message):
 
-    with open('reg.json', 'r') as f_o:
-        data_from_json = json.load(f_o)
-# ООП = user_id, username
     user_id = message.from_user.id
     username = message.from_user.first_name
-    user_exists = False
+
     user_selection(user_id,username,message)
-
-
 
 
 @bot.message_handler(commands=['words'])
@@ -89,42 +75,41 @@ def words(message):
     time_180 = types.KeyboardButton('🕜 3 часа')
     time_480 = types.KeyboardButton('🕣 9 часов')
     time_1240 = types.KeyboardButton('🕛 24 часа')
+
     markup.add(time_60, time_180, time_480, time_1240)
     bot.reply_to(message=message, text=f"""Отправь задержку, вот так: \n
-*60* \n \n(повторение слов произойдет через 60 минут, всего 2 повторения), также можешь использовать кнопки в панели 😉""", reply_markup=markup)
+    *60* \n \n(повторение слов произойдет через 60 минут, всего 2 повторения), также можешь использовать кнопки в панели 😉""", reply_markup=markup)
     bot.register_next_step_handler(message, write)
 
 
-
 def write(message):
-    conn = psycopg2.connect(
-        host=host,
-        user=user,
-        password=password,
-        database=db_name
-    )
 
-    conn.autocommit = True
-    cur = conn.cursor()
-
-    username = message.from_user.first_name
     text = message.text
     user_id = message.from_user.id
+
     if text == "⏰ 1 час":
         text = 60
+
     elif text == '🕜 3 часа':
         text = 180
+
     elif text == '🕣 9 часов':
         text = 480
+
     elif text == '🕛 24 часа':
         text = 1240
+
     else:
         text = message.text
-        try:
-            text = int(text)
-        except ValueError:
-            bot.reply_to(message, text='⚠️ ЗАДЕРЖКА ДОЛЖНА БЫТЬ УКАЗАНА В ЦИФРАХ!!!')
-            return words(message)
+        if text != '/delete':
+            try:
+                text = int(text)
+            except ValueError:
+                bot.reply_to(message, text='⚠️ ЗАДЕРЖКА ДОЛЖНА БЫТЬ УКАЗАНА В ЦИФРАХ!!!')
+                return words(message)
+        else:
+            delete(message)
+            return
         print(text)
     try:
 
@@ -148,47 +133,23 @@ def write(message):
 def complete_remind(message):
 
     user_id = message.from_user.id
-
-    conn = psycopg2.connect(
-        host=host,
-        user=user,
-        password=password,
-        database=db_name
-    )
-
-    conn.autocommit = True
-    cur = conn.cursor()
-    cur.execute('''SELECT english FROM words;''')
+    cur.execute(''' SELECT english FROM words; ''')
     words = cur.fetchall()
     english = random.choices(words, k=4)
-    print(english)
-    four_word = ''
-    translate = {}
+
     for i in english:
-        one_english = ''.join(i)
-        print(''.join(i))
-        cur.execute('''SELECT russian FROM words WHERE english = %s''', [i])
-        russian = ''.join(cur.fetchone())
-        print(russian)
-        four_word += one_english + ' — ' + russian + ', '
-        translate.update({one_english: russian})
+        cur.execute('''SELECT word_id FROM words WHERE english = %s''', [i])
+        cur.execute('INSERT INTO user_words VALUES (%s, %s)', [user_id, cur.fetchone()[0]])
 
-    four_word = four_word[:-2]
+    cur.execute('''
+    
+        SELECT words.english, words.russian FROM time_user JOIN user_words
+        ON time_user.user_id = user_words.user_id JOIN words ON user_words.word_id = words.word_id;
+        
+    ''')
 
-    with open('time_user.json', 'r') as f_o:
-        time_json = json.load(f_o)
-
-    print(four_word)
-
-    for s in time_json:
-        if s == str(user_id):
-            time_json[s]['Translate'] = translate
-            time_json[s]['Four_words'] = four_word
-
-    with open('time_user.json', 'w') as f_o:
-        json.dump(time_json, f_o, indent=4, ensure_ascii=False)
-
-    bot.send_message(user_id, text=f'Ваши слова для обучения: {four_word}')
+    four_words = "\n".join([f"{i[0]} - {i[1]}"  for i in cur.fetchall()])
+    bot.send_message(user_id, text=f'Ваши слова для обучения: \n\n{four_words}')
 
 
 def update(message):
@@ -198,18 +159,10 @@ def update(message):
 
 @bot.message_handler(commands=['delete'])
 def delete(message):
+
     user_id = message.from_user.id
-    with open('time_user.json', 'r') as f_o:
-        data_from_json = json.load(f_o)
 
-    for user in list(data_from_json):
-        if str(user_id) == user:
-            del data_from_json[user]
-
-
-    with open('time_user.json', 'w') as f_o:
-        json.dump(data_from_json, f_o, indent=4, ensure_ascii=False)
-
+    cur.execute('''DELETE FROM time_user WHERE user_id = %s''', [user_id])
 
     bot.reply_to(message, text="✅ Готово, ваши напоминания были удалены.")
 
@@ -261,7 +214,7 @@ def next_step(message, user, random_word):
         complete(message)
 
 
-
+# delete on cascade
 
 
 

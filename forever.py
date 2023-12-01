@@ -67,4 +67,4 @@ while True:
         else:
             change_json(user)
 
-    time.sleep(5)
+    time.sleep(60)
